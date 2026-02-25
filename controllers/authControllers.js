@@ -5,81 +5,59 @@ const bcrypt = require('bcrypt');
 const { createToken } = require('../utils/tokenCreate');
 const delay = require('../utils/delay');
 
+const COOKIE_OPTIONS = {
+    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+}
+
+const loginHandler = (model) => async (req, res) => {
+    await delay(200);
+    const { email, password } = req.body;
+    try {
+        const user = await model.findOne({email}).select('+password');
+        if (!user) {
+            return responseReturn(res, 401, {error: 'Invalid email or password!'});
+        }
+        const match = await bcrypt.compare(password, user.password)
+        if (!match) {
+            return responseReturn(res, 401, {error: 'Invalid email or password!'});
+        }
+        const token = await createToken({
+            id: user._id,
+            role: user.role
+        });
+        res.cookie('accessToken', token, COOKIE_OPTIONS);
+        responseReturn(res, 200, {token, message: 'Login success!'})
+    } catch (error) {
+        responseReturn(res, 500, {error: 'Internal server error!'})
+    }
+}
+// End method
+
+
 class authControllers {
-    admin_login = async (req, res) => {
-        await delay(200);
-        const {email, password} = req.body;
-        try {
-            const admin = await adminModel.findOne({email}).select('+password');
-            if (admin) {
-                const match = await bcrypt.compare(password, admin.password);
-                if (match) {
-                    const token = await createToken({
-                        id: admin._id,
-                        role: admin.role
-                    });
-                    res.cookie('accessToken', token, {
-                        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-                    })
-                    responseReturn(res, 200, {token, message: 'Login success!'})
-                } else {
-                    responseReturn(res, 404, {error: 'Password is incorrect!'})
-                }
-            } else {
-                responseReturn(res, 404, {error: 'User not found!'})
-            }
-        } catch (error) {
-            responseReturn(res, 500, {error: error.message})
-            
-        }
-    }
-    user_login = async (req, res) => {
-        await delay(200);
-        const {email, password} = req.body;
-        try {
-            const user = await userModel.findOne({email}).select('+password');
-            if (user) {
-                const match = await bcrypt.compare(password, user.password);
-                // console.log(match);
-                if (match) {
-                    const token = await createToken({
-                        id: user._id,
-                        role: user.role
-                    });
-                    res.cookie('accessToken', token, {
-                        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)})
-                    responseReturn(res, 200, {token,message: 'Login success!'})
-                } else {
-                    responseReturn(res, 404, {error: 'Password is incorrect!'})
-                }
-            } else {
-                responseReturn(res, 404, {error: 'User not found!'})
-            }
-        } catch (error) {
-            responseReturn(res, 500, {error: error.message})
-        }
-    }
+    admin_login = loginHandler(adminModel);
+    user_login = loginHandler(userModel);
     // End method
     user_register = async (req, res) => {
         const {email, name, password} = req.body;
         try {
             const getUser = await userModel.findOne({email});
             if (getUser) {
-                responseReturn(res, 404, {error: 'User already exists!'})
+                return responseReturn(res, 409, {error: 'User already exists!'})
             } else {
                 const user = await userModel.create({
                     name,
                     email,
                     password: await bcrypt.hash(password, 10),
-                    noteList: []
                 })
                 const token = await createToken({
                     id: user._id,
                     role: user.role
                 })
-                res.cookie('accessToken', token, {
-                    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-                })
+                res.cookie('accessToken', token, COOKIE_OPTIONS);
                 responseReturn(res, 200, {message: 'Register success!'})
             }
         } catch (error) {
@@ -107,7 +85,9 @@ class authControllers {
         try {
             res.cookie('accessToken', null, {
                 expires: new Date(Date.now()),
-                httpOnly: true
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict'
             });
             responseReturn(res, 200, {message: 'Logout success!'})
         } catch (error) {
