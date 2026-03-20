@@ -40,10 +40,10 @@ class adminControllers {
         return responseReturn(res, 403, {error: 'Access Denied!'})
     }
     const {id} = req.params;
-    if (!id) {
-        return responseReturn(res, 400, {error: 'User not found!'})
-    }
     try {
+        if (!id) {
+        return responseReturn(res, 400, {error: 'User not found!'})
+    }   
         await noteModel.deleteMany({userId: id});
         await userModel.findByIdAndDelete(id);
         responseReturn(res, 200, {message: 'User deleted successfully!'})

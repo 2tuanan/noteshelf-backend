@@ -1,16 +1,17 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();
+const helmet = require('helmet');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { dbConnect } = require('./utils/db');
 
-const frontPort = process.env.FRONTEND_PORT
+app.use(helmet());
 app.use(cors({
-    origin: [`http://localhost:${frontPort}`],
+    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3066'],
     credentials: true
-}))
+}));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
