@@ -5,9 +5,6 @@ const delay = require('../utils/delay')
 
 class adminControllers {
     get_users = async (req, res, next) => {
-    if (req.role !== 'admin') {
-        return responseReturn(res, 403, {error: 'Access Denied!'})
-    }
     try {
         const users = await userModel.find();
         responseReturn(res, 200, {users})
@@ -17,9 +14,6 @@ class adminControllers {
   }
   // End method
     reset_user = async (req, res, next) => {
-    if (req.role !== 'admin') {
-        return responseReturn(res, 403, {error: 'Access Denied!'})
-    }
     const {id} = req.params;
     await delay(200);
     try {
@@ -36,9 +30,6 @@ class adminControllers {
   // End method
     delete_user = async (req, res, next) => {
     await delay(200);
-    if (req.role !== 'admin') {
-        return responseReturn(res, 403, {error: 'Access Denied!'})
-    }
     const {id} = req.params;
     try {
         if (!id) {
