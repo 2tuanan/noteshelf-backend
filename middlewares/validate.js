@@ -8,9 +8,9 @@ const getValueAtPath = (source, path) => path.reduce((current, key) => {
   return current[key];
 }, source);
 
-const validate = (schema) => (req, res, next) => {
+const validate = (schema, target = 'body') => (req, res, next) => {
   try {
-    schema.parse(req.body);
+    schema.parse(req[target]);
     next();
   } catch (error) {
     if (error instanceof ZodError) {
@@ -20,7 +20,7 @@ const validate = (schema) => (req, res, next) => {
         error: 'Validation failed',
         details: issues.map((entry) => ({
           field: entry.path.join('.'),
-          message: entry.code === 'invalid_type' && getValueAtPath(req.body, entry.path) === undefined
+          message: entry.code === 'invalid_type' && getValueAtPath(req[target], entry.path) === undefined
             ? 'Required'
             : entry.message,
         })),

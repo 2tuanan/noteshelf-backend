@@ -12,7 +12,7 @@ const COOKIE_OPTIONS = {
     sameSite: 'strict'
 }
 
-const loginHandler = (model) => async (req, res) => {
+const loginHandler = (model) => async (req, res, next) => {
     await delay(200);
     const { email, password } = req.body;
     try {
@@ -31,7 +31,7 @@ const loginHandler = (model) => async (req, res) => {
         res.cookie('accessToken', token, COOKIE_OPTIONS);
         responseReturn(res, 200, {token, message: 'Login success!'})
     } catch (error) {
-        responseReturn(res, 500, {error: 'Internal server error!'})
+        next(error);
     }
 }
 // End method
@@ -41,7 +41,7 @@ class authControllers {
     admin_login = loginHandler(adminModel);
     user_login = loginHandler(userModel);
     // End method
-    user_register = async (req, res) => {
+    user_register = async (req, res, next) => {
         const {email, name, password} = req.body;
         try {
             const getUser = await userModel.findOne({email});
@@ -61,11 +61,11 @@ class authControllers {
                 responseReturn(res, 200, {message: 'Register success!'})
             }
         } catch (error) {
-            responseReturn(res, 500, {error: 'Internal server error!'})
+            next(error);
         }
     }
     // End method
-    get_user = async (req, res) => {
+    get_user = async (req, res, next) => {
         const {id, role} = req;
         try {
             if (role === 'admin') {
@@ -76,12 +76,12 @@ class authControllers {
                 responseReturn(res, 200, {userInfo: user})
             }
         } catch (error) {
-            responseReturn(res, 500, {error: 'Internal server error!'})
+            next(error);
         }
     }
     // End method
 
-    logout = async (req, res) => {
+    logout = async (req, res, next) => {
         try {
             res.cookie('accessToken', null, {
                 expires: new Date(Date.now()),
@@ -91,7 +91,7 @@ class authControllers {
             });
             responseReturn(res, 200, {message: 'Logout success!'})
         } catch (error) {
-            responseReturn(res, 500, {error: 'Internal server error!'})
+            next(error);
             
         }
     }

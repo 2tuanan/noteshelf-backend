@@ -1,12 +1,158 @@
 @url=http://localhost:4088/api
 
-###Signup
+### ─── AUTH ────────────────────────────────────────────
 
+### 1. Register (run once to create account)
+# @name register
 POST {{url}}/user-register
 Content-Type: application/json
 
 {
-    "name": "User",
-    "email": "user@gmail.com",
-    "password": "123123"
+    "name": "Test User",
+    "email": "test@test.com",
+    "password": "test123"
 }
+
+###
+
+### 2. Login — httpYac auto-saves the cookie for all requests below
+# @name login
+POST {{url}}/user-login
+Content-Type: application/json
+
+{
+    "email": "test@test.com",
+    "password": "test123"
+}
+
+### ─── NOTES ───────────────────────────────────────────
+
+### 3. Get all notes
+# @name getNotes
+GET {{url}}/get-notes
+
+###
+
+### 4. Add note (valid)
+# @name addNote
+POST {{url}}/add-note
+Content-Type: application/json
+
+{
+    "title": "My first note",
+    "content": "This is the note content"
+}
+
+###
+
+### 5. Update note (replace NOTE_ID after running addNote)
+# @name updateNote
+# @ref addNote
+PUT {{url}}/update-note/{{addNote.id}}
+Content-Type: application/json
+
+{
+    "title": "Updated title",
+    "content": "Updated content"
+}
+
+###
+
+### 6. Delete note
+# @name deleteNote
+DELETE {{url}}/delete-note/NOTE_ID
+
+### ─── SECURITY TESTS ──────────────────────────────────
+
+### AC1 — Missing title (expect 400)
+# @name ac1_missingTitle
+POST {{url}}/add-note
+Content-Type: application/json
+
+{
+    "content": "No title here"
+}
+
+###
+
+### AC2 — Content too long (expect 400)
+# @name ac2_contentTooLong
+POST {{url}}/add-note
+Content-Type: application/json
+
+{
+    "title": "Test",
+    "content": "{{'x'.repeat(50001)}}"
+}
+
+###
+
+### AC3 — Search without q param (expect 400)
+# @name ac3_searchNoParam
+GET {{url}}/search-notes
+
+###
+
+### AC4 — NoSQL injection on login (expect 400)
+# @name ac4_nosqlInjection
+POST {{url}}/user-login
+Content-Type: application/json
+
+{
+    "email": { "$gt": "" },
+    "password": "test"
+}
+
+###
+
+### AC5 — CastError invalid ID (expect 400 Invalid ID format)
+# @name ac5_castError
+DELETE {{url}}/delete-note/NOTANOBJECTID
+
+###
+
+### AC6 — Missing email on register (expect 400)
+# @name ac6_missingEmail
+POST {{url}}/user-register
+Content-Type: application/json
+
+{
+    "name": "Test",
+    "password": "test123"
+}
+
+###
+
+### AC7 — Rate limit (run 11 times — expect 429 on 11th)
+# @name ac7_rateLimit
+POST {{url}}/user-login
+Content-Type: application/json
+
+{
+    "email": "test@test.com",
+    "password": "wrongpassword"
+}
+
+### ─── ADMIN ───────────────────────────────────────────
+
+### Admin login (separate session)
+# @name adminLogin
+POST {{url}}/admin-login
+Content-Type: application/json
+
+{
+    "email": "admin@gmail.com",
+    "password": "admin123"
+}
+
+###
+
+### Get all users (admin only)
+# @name getAllUsers
+GET {{url}}/get-all-users
+
+###
+
+### Delete user (replace USER_ID)
+# @name deleteUser
+DELETE {{url}}/delete-user/USER_ID
