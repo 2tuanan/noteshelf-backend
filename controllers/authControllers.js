@@ -29,7 +29,7 @@ const loginHandler = (model) => async (req, res, next) => {
             role: user.role
         });
         res.cookie('accessToken', token, COOKIE_OPTIONS);
-        responseReturn(res, 200, {token, message: 'Login success!'})
+        responseReturn(res, 200, { message: 'Login success!' })
     } catch (error) {
         next(error);
     }
