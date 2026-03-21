@@ -4,22 +4,16 @@ const noteModel = require("../models/noteModel");
 const delay = require('../utils/delay')
 
 class adminControllers {
-  get_users = async (req, res) => {
-    if (req.role !== 'admin') {
-        return responseReturn(res, 403, {error: 'Access Denied!'})
-    }
+    get_users = async (req, res, next) => {
     try {
         const users = await userModel.find();
         responseReturn(res, 200, {users})
     } catch (error) {
-        responseReturn(res, 500, {error: 'Internal Server Error!'})
+        next(error);
     }
   }
   // End method
-  reset_user = async (req, res) => {
-    if (req.role !== 'admin') {
-        return responseReturn(res, 403, {error: 'Access Denied!'})
-    }
+    reset_user = async (req, res, next) => {
     const {id} = req.params;
     await delay(200);
     try {
@@ -30,15 +24,12 @@ class adminControllers {
         await userModel.findByIdAndUpdate(id, {$set: {noteTotal: 0}});
         responseReturn(res, 200, {message: 'Notes reset successfully!', noteTotal: 0})
     } catch (error) {
-        responseReturn(res, 500, {error: 'Internal Server Error!'})
+        next(error);
     }
   }
   // End method
-  delete_user = async (req, res) => {
+    delete_user = async (req, res, next) => {
     await delay(200);
-    if (req.role !== 'admin') {
-        return responseReturn(res, 403, {error: 'Access Denied!'})
-    }
     const {id} = req.params;
     try {
         if (!id) {
@@ -48,7 +39,7 @@ class adminControllers {
         await userModel.findByIdAndDelete(id);
         responseReturn(res, 200, {message: 'User deleted successfully!'})
     } catch (error) {
-        responseReturn(res, 500, {error: 'Internal Server Error!'})
+        next(error);
     }
   }
 }

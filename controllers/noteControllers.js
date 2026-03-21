@@ -4,7 +4,7 @@ const userModel = require("../models/userModel");
 const delay = require("../utils/delay");
 
 class noteControllers {
-    add_note = async (req, res) => {
+    add_note = async (req, res, next) => {
         await delay(200);
         const {id} = req;
         const {title, content} = req.body;        
@@ -17,22 +17,22 @@ class noteControllers {
             await userModel.findByIdAndUpdate(id, { $inc: {noteTotal: 1} });
             responseReturn(res, 201, {message: 'Note added!', note: newNote})
         } catch (error) {
-            responseReturn(res, 500, {error: 'Internal Server Error!'})
+            next(error);
         }
     }
     // End method
-    get_notes = async (req, res) => {
+    get_notes = async (req, res, next) => {
         const {id} = req;
         try {
             const notes = await noteModel.find({userId: id});
             const totalNotes = notes.length;
             responseReturn(res, 200, {notes, totalNotes})
         } catch (error) {
-            responseReturn(res, 500, {error: 'Internal Server Error!'})
+            next(error);
         }
     }
     // End method
-    delete_note = async (req, res) => {
+    delete_note = async (req, res, next) => {
         try {
             const {id} = req.params;
             const note = await noteModel.findById(id);
@@ -46,7 +46,7 @@ class noteControllers {
             await userModel.findByIdAndUpdate(req.id, { $inc: {noteTotal: -1} });
             responseReturn(res, 200, {message: 'Note deleted!'})
         } catch (error) {
-            responseReturn(res, 500, {error: 'Internal Server Error!'})
+            next(error);
         }
 
     }
