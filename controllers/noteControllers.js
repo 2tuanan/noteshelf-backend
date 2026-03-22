@@ -2,6 +2,12 @@ const { responseReturn } = require("../utils/response");
 const noteModel = require("../models/noteModel");
 const userModel = require("../models/userModel");
 const delay = require("../utils/delay");
+const sanitizeHtml = require('sanitize-html');
+
+const SANITIZE_OPTIONS = {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(['h1', 'h2', 'u', 's']),
+    allowedAttributes: { 'a': ['href', 'target'] }
+};
 
 class noteControllers {
     add_note = async (req, res, next) => {
@@ -9,10 +15,12 @@ class noteControllers {
         const {id} = req;
         const {title, content} = req.body;        
         try {
+            const sanitizedContent = sanitizeHtml(content, SANITIZE_OPTIONS);
             const newNote = await noteModel.create({
                 userId: id,
                 title,
-                content
+                content: sanitizedContent,
+                contentType: 'html'
             })
             await userModel.findByIdAndUpdate(id, { $inc: {noteTotal: 1} });
             responseReturn(res, 201, {message: 'Note added!', note: newNote})
@@ -60,7 +68,10 @@ class noteControllers {
             }
             const {title, content} = req.body;
             if (title !== undefined) note.title = title;
-            if (content !== undefined) note.content = content;
+            if (content !== undefined) {
+                note.content = sanitizeHtml(content, SANITIZE_OPTIONS);
+                note.contentType = 'html';
+            }
             const updatedNote = await note.save();
             responseReturn(res, 200, {message: 'Note updated!', note: updatedNote})
         } catch (error) {
