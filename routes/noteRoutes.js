@@ -8,6 +8,6 @@ router.post('/add-note', authMiddleware, validate(createNoteSchema), noteControl
 router.get('/get-notes',authMiddleware, noteControllers.get_notes);
 router.put('/update-note/:id', authMiddleware, validate(updateNoteSchema), noteControllers.update_note);
 router.delete('/delete-note/:id',authMiddleware, noteControllers.delete_note);
-// router.get('/search-notes', authMiddleware, validate(searchQuerySchema, 'query'), noteControllers.search_notes);
+router.get('/search-notes', authMiddleware, validate(searchQuerySchema, 'query'), noteControllers.search_notes);
 
 module.exports = router;

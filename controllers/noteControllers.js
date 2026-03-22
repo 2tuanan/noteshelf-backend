@@ -32,6 +32,22 @@ class noteControllers {
         }
     }
     // End method
+    search_notes = async (req, res, next) => {
+        const { id } = req;
+        const { q } = req.query;
+        try {
+            const notes = await noteModel.find({
+                userId: id,
+                $text: { $search: q }
+            }, {
+                score: { $meta: 'textScore' }
+            }).sort({ score: { $meta: 'textScore' } });
+            responseReturn(res, 200, { notes, totalNotes: notes.length });
+        } catch (error) {
+            next(error);
+        }
+    }
+    // End method
     update_note = async (req, res, next) => {
         try {
             const {id} = req.params;
