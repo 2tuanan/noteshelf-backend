@@ -12,6 +12,11 @@ const noteSchema = new Schema({
     content: {
         type: String,
         required: true
+    },
+    contentType: {
+        type: String,
+        enum: ['text', 'html'],
+        default: 'text'
     }
 }, {timestamps: true});
 
