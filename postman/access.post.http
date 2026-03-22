@@ -45,20 +45,89 @@ Content-Type: application/json
 
 ###
 
-### 5. Update note (replace NOTE_ID after running addNote)
-# @name updateNote
+### 5. Update title only (AC1)
+# @name updateNoteTitle
 # @ref addNote
 PUT {{url}}/update-note/{{addNote.id}}
 Content-Type: application/json
 
 {
-    "title": "Updated title",
-    "content": "Updated content"
+    "title": "Updated Title"
 }
 
 ###
 
-### 6. Delete note
+### 6. Update content only (AC2)
+# @name updateNoteContent
+# @ref addNote
+PUT {{url}}/update-note/{{addNote.id}}
+Content-Type: application/json
+
+{
+    "content": "<p>Updated content</p>"
+}
+
+###
+
+### 7. Ownership check with second user (AC3)
+# @name registerUser2
+POST {{url}}/user-register
+Content-Type: application/json
+
+{
+    "name": "Test User 2",
+    "email": "user2@test.com",
+    "password": "test123"
+}
+
+###
+
+### 8. Login as second user
+# @name loginUser2
+POST {{url}}/user-login
+Content-Type: application/json
+
+{
+    "email": "user2@test.com",
+    "password": "test123"
+}
+
+###
+
+### 9. Update note as second user (expect 403)
+# @name updateNoteForbidden
+# @ref loginUser2
+PUT {{url}}/update-note/{{addNote.id}}
+Content-Type: application/json
+
+{
+    "title": "Forbidden Update"
+}
+
+###
+
+### 10. Non-existent note (AC4)
+# @name updateNoteMissing
+PUT {{url}}/update-note/507f1f77bcf86cd799439011
+Content-Type: application/json
+
+{
+    "title": "Missing Note"
+}
+
+###
+
+### 11. Empty body blocked (AC5)
+# @name updateNoteEmpty
+# @ref addNote
+PUT {{url}}/update-note/{{addNote.id}}
+Content-Type: application/json
+
+{}
+
+###
+
+### 12. Delete note
 # @name deleteNote
 DELETE {{url}}/delete-note/NOTE_ID
 

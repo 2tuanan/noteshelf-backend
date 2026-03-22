@@ -32,6 +32,26 @@ class noteControllers {
         }
     }
     // End method
+    update_note = async (req, res, next) => {
+        try {
+            const {id} = req.params;
+            const note = await noteModel.findById(id);
+            if (!note) {
+                return responseReturn(res, 404, {error: 'Note not found!'})
+            }
+            if (note.userId.toString() !== req.id) {
+                return responseReturn(res, 403, {error: 'Forbidden!'})
+            }
+            const {title, content} = req.body;
+            if (title !== undefined) note.title = title;
+            if (content !== undefined) note.content = content;
+            const updatedNote = await note.save();
+            responseReturn(res, 200, {message: 'Note updated!', note: updatedNote})
+        } catch (error) {
+            next(error);
+        }
+    }
+    // End method
     delete_note = async (req, res, next) => {
         try {
             const {id} = req.params;
