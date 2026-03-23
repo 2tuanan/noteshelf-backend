@@ -3,6 +3,7 @@ const noteModel = require("../models/noteModel");
 const userModel = require("../models/userModel");
 const delay = require("../utils/delay");
 const sanitizeHtml = require('sanitize-html');
+const { generateTags } = require('../utils/aiClient');
 
 const SANITIZE_OPTIONS = {
     allowedTags: sanitizeHtml.defaults.allowedTags.concat(['h1', 'h2', 'u', 's']),
@@ -23,6 +24,13 @@ class noteControllers {
                 contentType: 'html'
             })
             await userModel.findByIdAndUpdate(id, { $inc: {noteTotal: 1} });
+            try {
+                const tags = await generateTags(newNote.content);
+                newNote.tags = tags;
+                await newNote.save();
+            } catch (tagError) {
+                console.error('[auto-tag] Failed:', tagError.message);
+            }
             responseReturn(res, 201, {message: 'Note added!', note: newNote})
         } catch (error) {
             next(error);
@@ -71,8 +79,17 @@ class noteControllers {
             if (content !== undefined) {
                 note.content = sanitizeHtml(content, SANITIZE_OPTIONS);
                 note.contentType = 'html';
+                note.summary = '';
+                note.summaryUpdatedAt = null;
             }
             const updatedNote = await note.save();
+            try {
+                const tags = await generateTags(updatedNote.content);
+                updatedNote.tags = tags;
+                await updatedNote.save();
+            } catch (tagError) {
+                console.error('[auto-tag] Failed:', tagError.message);
+            }
             responseReturn(res, 200, {message: 'Note updated!', note: updatedNote})
         } catch (error) {
             next(error);

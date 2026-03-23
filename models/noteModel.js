@@ -24,6 +24,10 @@ const noteSchema = new Schema({
     },
     summaryUpdatedAt: {
         type: Date
+    },
+    tags: {
+        type: [String],
+        default: []
     }
 }, {timestamps: true});
 

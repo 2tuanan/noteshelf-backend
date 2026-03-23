@@ -1,4 +1,4 @@
-const aiClient = require('../utils/aiClient');
+const { aiClient } = require('../utils/aiClient');
 const noteModel = require('../models/noteModel');
 
 class AiController {
