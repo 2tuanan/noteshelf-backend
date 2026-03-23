@@ -3,6 +3,7 @@ const noteModel = require("../models/noteModel");
 const userModel = require("../models/userModel");
 const delay = require("../utils/delay");
 const sanitizeHtml = require('sanitize-html');
+const { isValidObjectId } = require('mongoose');
 const { generateTags } = require('../utils/aiClient');
 
 const SANITIZE_OPTIONS = {
@@ -67,6 +68,9 @@ class noteControllers {
     update_note = async (req, res, next) => {
         try {
             const {id} = req.params;
+            if (!isValidObjectId(id)) {
+                return responseReturn(res, 400, {error: 'Invalid ID format'});
+            }
             const note = await noteModel.findById(id);
             if (!note) {
                 return responseReturn(res, 404, {error: 'Note not found!'})
@@ -99,6 +103,9 @@ class noteControllers {
     delete_note = async (req, res, next) => {
         try {
             const {id} = req.params;
+            if (!isValidObjectId(id)) {
+                return responseReturn(res, 400, {error: 'Invalid ID format'});
+            }
             const note = await noteModel.findById(id);
             if (!note) {
                 return responseReturn(res, 404, {error: 'Note not found!'})
