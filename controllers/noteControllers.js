@@ -6,7 +6,7 @@ const sanitizeHtml = require('sanitize-html');
 
 const SANITIZE_OPTIONS = {
     allowedTags: sanitizeHtml.defaults.allowedTags.concat(['h1', 'h2', 'u', 's']),
-    allowedAttributes: { 'a': ['href', 'target'] }
+    allowedAttributes: { 'a': ['href', 'target'] },
 };
 
 class noteControllers {

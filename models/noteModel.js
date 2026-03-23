@@ -17,6 +17,13 @@ const noteSchema = new Schema({
         type: String,
         enum: ['text', 'html'],
         default: 'text'
+    },
+    summary: {
+        type: String,
+        default: ''
+    },
+    summaryUpdatedAt: {
+        type: Date
     }
 }, {timestamps: true});
 
