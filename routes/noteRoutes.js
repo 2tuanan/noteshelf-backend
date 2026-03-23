@@ -9,5 +9,8 @@ router.get('/get-notes',authMiddleware, noteControllers.get_notes);
 router.put('/update-note/:id', authMiddleware, validate(updateNoteSchema), noteControllers.update_note);
 router.delete('/delete-note/:id',authMiddleware, noteControllers.delete_note);
 router.get('/search-notes', authMiddleware, validate(searchQuerySchema, 'query'), noteControllers.search_notes);
+router.post('/share-note/:id', authMiddleware, noteControllers.share_note);
+router.delete('/unshare-note/:id', authMiddleware, noteControllers.unshare_note);
+router.get('/public/note/:shareToken', noteControllers.get_public_note);
 
 module.exports = router;

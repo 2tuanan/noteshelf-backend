@@ -28,6 +28,18 @@ const noteSchema = new Schema({
     tags: {
         type: [String],
         default: []
+    },
+    isPublic: {
+        type: Boolean,
+        default: false
+    },
+    shareToken: {
+        type: String,
+        sparse: true,
+        index: true
+    },
+    sharedAt: {
+        type: Date
     }
 }, {timestamps: true});
 

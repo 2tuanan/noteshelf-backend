@@ -3,6 +3,7 @@ const noteModel = require("../models/noteModel");
 const userModel = require("../models/userModel");
 const delay = require("../utils/delay");
 const sanitizeHtml = require('sanitize-html');
+const { randomUUID } = require('crypto');
 const { isValidObjectId } = require('mongoose');
 const { generateTags } = require('../utils/aiClient');
 
@@ -120,6 +121,57 @@ class noteControllers {
             next(error);
         }
 
+    }
+    // End method
+    share_note = async (req, res, next) => {
+        const { id: userId } = req;
+        const { id: noteId } = req.params;
+        try {
+            const note = await noteModel.findOne({ _id: noteId, userId });
+            if (!note) {
+                return responseReturn(res, 403, { message: 'Forbidden' });
+            }
+            note.isPublic = true;
+            note.shareToken = randomUUID();
+            note.sharedAt = new Date();
+            await note.save();
+            responseReturn(res, 200, { shareToken: note.shareToken, message: 'Note shared' });
+        } catch (error) {
+            next(error);
+        }
+    }
+    // End method
+    unshare_note = async (req, res, next) => {
+        const { id: userId } = req;
+        const { id: noteId } = req.params;
+        try {
+            const note = await noteModel.findOne({ _id: noteId, userId });
+            if (!note) {
+                return responseReturn(res, 403, { message: 'Forbidden' });
+            }
+            note.isPublic = false;
+            note.shareToken = undefined;
+            note.sharedAt = undefined;
+            await note.save();
+            responseReturn(res, 200, { message: 'Note unshared' });
+        } catch (error) {
+            next(error);
+        }
+    }
+    // End method
+    get_public_note = async (req, res, next) => {
+        const { shareToken } = req.params;
+        try {
+            const note = await noteModel
+                .findOne({ shareToken, isPublic: true })
+                .select('title content contentType sharedAt');
+            if (!note) {
+                return responseReturn(res, 404, { message: 'Note not found or not public' });
+            }
+            responseReturn(res, 200, { note });
+        } catch (error) {
+            next(error);
+        }
     }
     // End method
 }
