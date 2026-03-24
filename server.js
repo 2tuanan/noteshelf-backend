@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 const { dbConnect } = require('./utils/db');
 const { errorHandler } = require('./middlewares/errorHandler');
 const aiRoutes = require('./routes/aiRoutes');
+const exportRoutes = require('./routes/exportRoutes');
 
 app.use(helmet());
 app.use(cors({
@@ -20,6 +21,7 @@ app.use(cookieParser());
 app.use('/api', require('./routes/authRoutes'))
 app.use('/api', require('./routes/noteRoutes'))
 app.use('/api/ai', aiRoutes)
+app.use('/api/export', exportRoutes)
 app.use('/api', require('./routes/adminRoutes'))
 
 app.get('/', (req, res) => res.send('Backend!'));
